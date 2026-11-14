@@ -1,16 +1,27 @@
-# React + Vite
+# Drone Monitor Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite frontend for pilot/robot connections over WebRTC.
 
-Currently, two official plugins are available:
+## Run
+```
+npm install
+npm run dev
+```
+Open http://localhost:5173 in two browser tabs: choose Pilot in one, Robot in the other.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Flow
+1. Choose Pilot or Robot.
+2. Pilots see available robots, robots see connected pilots.
+3. Clicking a peer sends a request; the other side accepts or rejects in a popup.
+4. On accept, a WebRTC data channel opens (video tracks can be added in `src/useSession.js`).
 
-## React Compiler
+## For the backend dev
+`src/signaling.js` is a mock (BroadcastChannel). Replace it with a WebSocket client
+that keeps the same three functions: `join`, `leave`, `send`. The contract is described at the top of that file.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Live drone data (badges)
+`src/telemetry.js` is a mock drone feed (battery, signal, speed, mode). Replace its body with the real feed and keep the
+contract described at the top of the file. The robot page sends each reading to the pilot over the WebRTC data channel
+(`{ type: 'telemetry', data }`) once per second, and the pilot page shows it as badges. To show another value, add a line
+to `BADGES` in `src/App.jsx`. The robot's battery and busy/online state are also published through
+`signaling.update(...)` so the peer list can show them before connecting.
